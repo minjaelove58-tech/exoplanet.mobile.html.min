@@ -1,46 +1,162 @@
-# exoplanet.mobile.html.min
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>COM 궤도 시뮬레이터 (COM 항상 표시)</title>
+<title>Exoplanet & COM Orbit Simulator (Mobile-ready)</title>
 <style>
-  html,body{margin:0;background:#000;color:#fff;font-family:system-ui,-apple-system,sans-serif;overflow:hidden;}
-  #hud{position:fixed;top:0;left:0;width:100%;z-index:3;background:rgba(0,0,0,0.6);padding:8px 14px;box-sizing:border-box;line-height:1.5}
-  #ui{position:fixed;bottom:0;left:0;width:100%;z-index:3;background:rgba(20,20,20,0.96);
-      padding:12px 16px;display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:center;box-sizing:border-box}
-  label{display:flex;align-items:center;gap:6px;font-size:14px;white-space:nowrap}
-  input[type=range]{width:160px} input[type=number]{width:80px}
-  button{background:#3b82f6;color:#fff;border:0;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer}
-  canvas{display:block;position:absolute;left:0;z-index:1}
-  .sep{width:1px;height:28px;background:#555;margin:0 8px}
+  html,body{
+    margin:0;
+    background:#000;
+    color:#fff;
+    font-family:system-ui,-apple-system,sans-serif;
+    overflow:hidden;
+  }
+  #hud{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    z-index:3;
+    background:rgba(0,0,0,0.6);
+    padding:8px 14px;
+    box-sizing:border-box;
+    line-height:1.5;
+    font-size:13px;
+  }
+
+  /* 아래 UI 바 */
+  #ui{
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    z-index:3;
+    background:rgba(20,20,20,0.96);
+    padding:10px 12px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 12px;
+    align-items:center;
+    justify-content:center;
+    box-sizing:border-box;
+    font-size:13px;
+
+    /* 모바일에서 내용이 많을 때 좌우 스크롤 허용 */
+    overflow-x:auto;
+  }
+  #ui-inner{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 12px;
+    align-items:center;
+    justify-content:center;
+  }
+  label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+  }
+  input[type=range]{width:150px}
+  input[type=number]{width:80px}
+  button{
+    background:#3b82f6;
+    color:#fff;
+    border:0;
+    padding:8px 14px;
+    border-radius:8px;
+    font-weight:700;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  button:hover{
+    background:#60a5fa;
+  }
+
+  canvas{
+    display:block;
+    position:absolute;
+    left:0;
+    z-index:1;
+    /* 터치 제스처를 캔버스가 직접 받도록 */
+    touch-action:none;
+  }
+  .sep{
+    width:1px;
+    height:26px;
+    background:#555;
+    margin:0 6px;
+  }
+
+  @media (max-width: 700px){
+    #hud{
+      font-size:12px;
+      padding:6px 10px;
+    }
+    #ui{
+      padding:8px 8px 10px;
+    }
+    input[type=range]{width:130px}
+    input[type=number]{width:70px}
+    label{
+      font-size:11px;
+    }
+  }
 </style>
 </head>
 <body>
 <div id="hud"><div id="hudText"></div></div>
 <canvas id="sim"></canvas>
+
 <div id="ui">
-  <label>항성 온도(K) <input id="temp" type="range" min="3000" max="30000" step="100" value="5800"></label>
-  <label>a(행성-항성 거리, px) <input id="a" type="range" min="120" max="1000" step="10" value="400"></label>
-  <label>공전주기 T(초) <input id="period" type="range" min="4" max="120" step="1" value="20"></label>
-  <label>속도 배율 x <input id="speedMul" type="range" min="0.1" max="5" step="0.1" value="1.0"></label>
-  <span class="sep"></span>
-  <label>이심률 e <input id="ecc" type="number" min="0" max="0.95" step="0.01" value="0.30"></label>
-  <label>기울기 i(°) <input id="inc" type="number" min="0" max="180" step="0.1" value="25"></label>
-  <label>Ω(°) <input id="Omega" type="number" min="0" max="360" step="0.1" value="30"></label>
-  <label>ω(°) <input id="omega" type="number" min="0" max="360" step="0.1" value="45"></label>
-  <span class="sep"></span>
-  <label>항성 질량(M☉) <input id="mStar" type="number" min="0.01" max="50" step="0.01" value="1.00"></label>
-  <label>행성 질량(M⊕) <input id="mPlanet" type="number" min="0.01" max="2000" step="0.01" value="1.00"></label>
-  <button id="toggle">Start</button>
-  <button id="reset">Center</button>
+  <div id="ui-inner">
+    <label>항성 온도(K)
+      <input id="temp" type="range" min="3000" max="30000" step="100" value="5800">
+    </label>
+    <label>a(행성-항성 거리, px)
+      <input id="a" type="range" min="120" max="1000" step="10" value="400">
+    </label>
+    <label>공전주기 T(초)
+      <input id="period" type="range" min="4" max="120" step="1" value="20">
+    </label>
+    <label>속도 배율 x
+      <input id="speedMul" type="range" min="0.1" max="5" step="0.1" value="1.0">
+    </label>
+
+    <span class="sep"></span>
+
+    <label>이심률 e
+      <input id="ecc" type="number" min="0" max="0.95" step="0.01" value="0.30">
+    </label>
+    <label>기울기 i(°)
+      <input id="inc" type="number" min="0" max="180" step="0.1" value="25">
+    </label>
+    <label>Ω(°)
+      <input id="Omega" type="number" min="0" max="360" step="0.1" value="30">
+    </label>
+    <label>ω(°)
+      <input id="omega" type="number" min="0" max="360" step="0.1" value="45">
+    </label>
+
+    <span class="sep"></span>
+
+    <label>항성 질량(M☉)
+      <input id="mStar" type="number" min="0.01" max="50" step="0.01" value="1.00">
+    </label>
+    <label>행성 질량(M⊕)
+      <input id="mPlanet" type="number" min="0.01" max="2000" step="0.01" value="1.00">
+    </label>
+    <button id="toggle">Start</button>
+    <button id="reset">Center</button>
+  </div>
 </div>
 
 <script>
 const cvs = document.getElementById('sim');
 const ctx = cvs.getContext('2d');
 const hud = document.getElementById('hudText');
+
 const controls = {
   temp: document.getElementById('temp'),
   a: document.getElementById('a'),
@@ -58,40 +174,60 @@ const controls = {
   uiDiv: document.getElementById('ui'),
 };
 
+// 캔버스 / 배경별
+let stars = [];
+function createStars() {
+  stars = Array.from({length:320}, () => [
+    Math.random() * cvs.width,
+    Math.random() * cvs.height
+  ]);
+}
+
+// 리사이즈 시 HUD / UI 높이 반영해서 캔버스 크기 조정
 function resize(){
   const hudH = controls.hudDiv.offsetHeight;
   const uiH  = controls.uiDiv.offsetHeight;
-  cvs.width  = innerWidth;
-  cvs.height = innerHeight - hudH - uiH;
+  const width = window.innerWidth;
+  const height = window.innerHeight - hudH - uiH;
+
+  cvs.width  = width;
+  cvs.height = Math.max(1, height);
   cvs.style.top = hudH + 'px';
+
+  createStars();
 }
-addEventListener('resize', resize); resize();
+window.addEventListener('resize', resize);
+resize();
 
 // 상수
-const MSUN=1.98847e30, MEARTH=5.972e24;
-
-// 배경별
-const stars = Array.from({length:320}, ()=> [Math.random()*innerWidth, Math.random()*innerHeight]);
+const MSUN   = 1.98847e30;
+const MEARTH = 5.972e24;
 
 // 회전/투영
-function rotZ([x,y,z],a){const c=Math.cos(a),s=Math.sin(a);return [c*x - s*y, s*x + c*y, z];}
-function rotX([x,y,z],a){const c=Math.cos(a),s=Math.sin(a);return [x, c*y - s*z, s*y + c*z];}
+function rotZ([x,y,z],a){
+  const c=Math.cos(a), s=Math.sin(a);
+  return [c*x - s*y, s*x + c*y, z];
+}
+function rotX([x,y,z],a){
+  const c=Math.cos(a), s=Math.sin(a);
+  return [x, c*y - s*z, s*y + c*z];
+}
 function project([x,y,z]){ return [x, y]; }
 
-// 케플러
+// 케플러 방정식
 function solveKepler(M,e){
   M = (M%(2*Math.PI) + 2*Math.PI)%(2*Math.PI);
   let E = e<0.8 ? M : Math.PI;
   for(let k=0;k<50;k++){
-    const f = E - e*Math.sin(E) - M;
-    const fp= 1 - e*Math.cos(E);
+    const f  = E - e*Math.sin(E) - M;
+    const fp = 1 - e*Math.cos(E);
     E -= f/fp;
     if(Math.abs(f) < 1e-9) break;
   }
   return E;
 }
 
-// 색상
+// 온도 → 색
 function tempToRGB(temp){
   temp = Math.max(3000, Math.min(30000, temp))/1000;
   let r,g,b;
@@ -105,37 +241,106 @@ function tempToRGB(temp){
 const trail = [];
 const TRAIL_MAX = 300;
 
-// 카메라
+// 카메라: 팬 + 줌
 let scale = 1;
 let pan = {x:0, y:0};
-let dragging = false, lastMouse = {x:0,y:0};
-cvs.addEventListener('mousedown', e=>{ dragging=true; lastMouse={x:e.clientX,y:e.clientY}; });
-addEventListener('mouseup', ()=> dragging=false);
-addEventListener('mousemove', e=>{
-  if(!dragging) return;
-  const dx = e.clientX - lastMouse.x;
-  const dy = e.clientY - lastMouse.y;
-  pan.x += dx; pan.y += dy;
-  lastMouse = {x:e.clientX,y:e.clientY};
+
+// 포인터(마우스 + 터치) 상태
+const pointers = new Map(); // id -> {x,y}
+let lastPanPos = {x:0, y:0};
+let lastPinchDist = null;
+
+// 포인터 다운
+cvs.addEventListener('pointerdown', (e)=>{
+  // 왼쪽 버튼/터치만
+  if (e.button !== undefined && e.button !== 0) return;
+  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  cvs.setPointerCapture(e.pointerId);
+
+  if (pointers.size === 1) {
+    const p = pointers.values().next().value;
+    lastPanPos = {x:p.x, y:p.y};
+    lastPinchDist = null;
+  } else if (pointers.size === 2) {
+    const it = pointers.values();
+    const p1 = it.next().value;
+    const p2 = it.next().value;
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    lastPinchDist = Math.hypot(dx, dy);
+  }
 });
+
+// 포인터 이동
+window.addEventListener('pointermove', (e)=>{
+  if (!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+
+  if (pointers.size === 1) {
+    // 한 손가락(또는 마우스) → 팬
+    const p = pointers.values().next().value;
+    const dx = p.x - lastPanPos.x;
+    const dy = p.y - lastPanPos.y;
+    pan.x += dx;
+    pan.y += dy;
+    lastPanPos = {x:p.x, y:p.y};
+  } else if (pointers.size === 2) {
+    // 두 손가락 → 핀치 줌
+    const it = pointers.values();
+    const p1 = it.next().value;
+    const p2 = it.next().value;
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    const dist = Math.hypot(dx, dy);
+    if (lastPinchDist != null && lastPinchDist > 0) {
+      const factor = dist / lastPinchDist;
+      scale *= factor;
+      scale = Math.max(0.2, Math.min(5, scale));
+    }
+    lastPinchDist = dist;
+  }
+});
+
+// 포인터 업/취소
+function endPointer(e){
+  if (!pointers.has(e.pointerId)) return;
+  pointers.delete(e.pointerId);
+  try { cvs.releasePointerCapture(e.pointerId); } catch(_){}
+  if (pointers.size === 1) {
+    const p = pointers.values().next().value;
+    lastPanPos = {x:p.x, y:p.y};
+    lastPinchDist = null;
+  } else if (pointers.size === 0) {
+    lastPinchDist = null;
+  }
+}
+window.addEventListener('pointerup', endPointer);
+window.addEventListener('pointercancel', endPointer);
+
+// 휠 줌 (PC용)
 cvs.addEventListener('wheel', e=>{
   e.preventDefault();
   const factor = Math.exp(-e.deltaY*0.0015);
-  const rect = cvs.getBoundingClientRect();
-  const mx = (e.clientX - rect.left - pan.x) / scale;
-  const my = (e.clientY - rect.top  - pan.y) / scale;
   scale *= factor;
-  pan.x = e.clientX - rect.left - mx*scale;
-  pan.y = e.clientY - rect.top  - my*scale;
-}, {passive:false});
+  scale = Math.max(0.2, Math.min(5, scale));
+},{passive:false});
 
-// 제어
+// 재생 제어
 let running=false;
-controls.toggle.onclick = ()=>{ running = !running; controls.toggle.textContent = running ? 'Pause' : 'Start'; };
-controls.reset.onclick  = ()=>{ pan.x=0; pan.y=0; scale=1; trail.length=0; };
+controls.toggle.onclick = ()=>{
+  running = !running;
+  controls.toggle.textContent = running ? 'Pause' : 'Start';
+};
+controls.reset.onclick  = ()=>{
+  scale = 1;
+  pan.x = 0;
+  pan.y = 0;
+  trail.length = 0;
+};
 
 // 시간
-let t=0, last=performance.now();
+let t=0;
+let last=performance.now();
 
 // 공용 궤도
 function orb2D(aVal, phase, e, inc, Om, om){
@@ -148,7 +353,8 @@ function orb2D(aVal, phase, e, inc, Om, om){
 }
 
 function frame(now){
-  const dt = (now - last)/1000; last = now;
+  const dt = (now - last)/1000;
+  last = now;
   const speedMul = parseFloat(controls.speedMul.value);
   if(running) t += dt * speedMul;
 
@@ -163,29 +369,42 @@ function frame(now){
   const mStarM = Math.max(1e-6, parseFloat(controls.mStar.value)||1);
   const mPlM   = Math.max(1e-6, parseFloat(controls.mPlanet.value)||1);
 
-  const mStar = mStarM * MSUN, mPl = mPlM * MEARTH;
+  const mStar = mStarM * MSUN;
+  const mPl   = mPlM   * MEARTH;
   const totM  = mStar + mPl;
+
   const a_star   = aTot * (mPl / totM);
   const a_planet = aTot * (mStar / totM);
 
   const n = 2*Math.PI / Tsec;
   const M = n * t;
   const E = solveKepler(M, e);
-  const cosE=Math.cos(E), sinE=Math.sin(E);
-  const cosf=(cosE - e)/(1 - e*cosE);
-  const sinf=Math.sqrt(1 - e*e)*sinE/(1 - e*cosE);
+  const cosE = Math.cos(E), sinE = Math.sin(E);
+  const cosf = (cosE - e)/(1 - e*cosE);
+  const sinf = Math.sqrt(1 - e*e)*sinE/(1 - e*cosE);
   const f = Math.atan2(sinf, cosf);
 
-  // 화면 초기화
+  // 화면 초기화 (배경별)
   ctx.setTransform(1,0,0,1,0,0);
   ctx.clearRect(0,0,cvs.width,cvs.height);
-  for(const [sx,sy] of stars){ ctx.fillStyle="#fff"; ctx.fillRect(sx, sy, 1, 1); }
-  ctx.setTransform(scale,0,0,scale, pan.x + cvs.width/2, pan.y + cvs.height/2);
+  ctx.fillStyle="#fff";
+  for(const [sx,sy] of stars){
+    ctx.fillRect(sx, sy, 1, 1);
+  }
+
+  // 좌표계: 중앙 + 팬 + 줌
+  ctx.setTransform(
+    scale, 0,
+    0,     scale,
+    cvs.width/2 + pan.x,
+    cvs.height/2 + pan.y
+  );
 
   // 궤도 타원
   ctx.strokeStyle = "rgba(150,150,150,0.7)";
+  ctx.lineWidth = 1/scale;
   ctx.beginPath();
-  for(let ang=0; ang<=Math.PI*2; ang+=0.02){
+  for(let ang=0; ang<=Math.PI*2+1e-3; ang+=0.02){
     const p = orb2D(a_planet, ang, e, inc, Om, om);
     if(ang===0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
   }
@@ -194,10 +413,10 @@ function frame(now){
   const P = orb2D(a_planet, f,         e, inc, Om, om);
   const S = orb2D(a_star,   f+Math.PI, e, inc, Om, om);
 
-  trail.push([P[0], P[1]]);
-  if(trail.length > 300) trail.shift();
-
   // 트레일
+  trail.push([P[0], P[1]]);
+  if(trail.length > TRAIL_MAX) trail.shift();
+
   if(trail.length>1){
     ctx.lineWidth=2/scale;
     for(let i=1;i<trail.length;i++){
@@ -212,26 +431,41 @@ function frame(now){
 
   // 항성
   ctx.fillStyle=tempToRGB(TEMP);
-  ctx.beginPath();ctx.arc(S[0],S[1],24,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();
+  ctx.arc(S[0],S[1],24,0,Math.PI*2);
+  ctx.fill();
 
   // 행성 + 위상
   const planetR=10;
   ctx.fillStyle="rgb(40,60,80)";
-  ctx.beginPath();ctx.arc(P[0],P[1],planetR,0,Math.PI*2);ctx.fill();
-  const lx=S[0]-P[0],ly=S[1]-P[1],L=Math.hypot(lx,ly)||1;
-  const ux=lx/L,uy=ly/L;
-  ctx.fillStyle="rgb(120,200,255)";
-  ctx.beginPath();ctx.arc(P[0]+ux*planetR*0.6,P[1]+uy*planetR*0.6,planetR,0,Math.PI*2);
-  ctx.globalAlpha=0.75;ctx.fill();ctx.globalAlpha=1;
+  ctx.beginPath();
+  ctx.arc(P[0],P[1],planetR,0,Math.PI*2);
+  ctx.fill();
 
-  // ✅ 마지막에 COM 표시 (항성·행성 위에도 항상 보임)
-  ctx.strokeStyle="red"; ctx.lineWidth=2/scale;
+  const lx=S[0]-P[0], ly=S[1]-P[1];
+  const L=Math.hypot(lx,ly)||1;
+  const ux=lx/L, uy=ly/L;
+  ctx.fillStyle="rgb(120,200,255)";
+  ctx.beginPath();
+  ctx.arc(P[0]+ux*planetR*0.6, P[1]+uy*planetR*0.6, planetR, 0, Math.PI*2);
+  ctx.globalAlpha=0.75;
+  ctx.fill();
+  ctx.globalAlpha=1;
+
+  // COM 표시 (항상 중앙)
+  ctx.strokeStyle="red";
+  ctx.lineWidth=2/scale;
   ctx.beginPath();
   ctx.moveTo(-8,0); ctx.lineTo(8,0);
   ctx.moveTo(0,-8); ctx.lineTo(0,8);
   ctx.stroke();
 
-  hud.innerHTML=`속도배율 x${speedMul.toFixed(1)} | e=${e.toFixed(2)} | i=${(inc*180/Math.PI).toFixed(1)}° | Ω=${(Om*180/Math.PI).toFixed(1)}° | ω=${(om*180/Math.PI).toFixed(1)}°<br>COM(빨간 X)은 항상 최상단에 표시됨`;
+  hud.innerHTML =
+    `속도배율 x${speedMul.toFixed(1)} | e=${e.toFixed(2)} | ` +
+    `i=${(inc*180/Math.PI).toFixed(1)}° | Ω=${(Om*180/Math.PI).toFixed(1)}° | ` +
+    `ω=${(om*180/Math.PI).toFixed(1)}°` +
+    `<br>조작: 한 손가락/마우스 드래그 = 화면 이동, 두 손가락 핀치 = 확대/축소, 휠 = 줌, COM(빨간 X)은 항상 질량중심 위치`;
+
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
